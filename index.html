@@ -1,0 +1,4843 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+
+    <!-- =========================================================
+         WEBGIS - TYPES DE VEGETATION DE LA COTE D'IVOIRE
+         Version avancée
+         ========================================================= -->
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1,
+                   maximum-scale=1,
+                   user-scalable=no">
+
+    <meta name="theme-color" content="#1B4332">
+
+    <title>
+        WebGIS | Types de végétation de la Côte d'Ivoire
+    </title>
+
+    <!-- =========================================================
+         CSS QGIS2WEB / LEAFLET
+         ========================================================= -->
+
+    <link rel="stylesheet" href="css/leaflet.css">
+    <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+    <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+    <link rel="stylesheet" href="css/qgis2web.css">
+    <link rel="stylesheet" href="css/fontawesome-all.min.css">
+    <link rel="stylesheet" href="css/leaflet.photon.css">
+    <link rel="stylesheet" href="css/leaflet-measure.css">
+
+    <!-- =========================================================
+         CHART.JS
+         Utilisé pour les graphiques statistiques
+         ========================================================= -->
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    <style>
+
+        /* =========================================================
+           1. CONFIGURATION GENERALE
+           ========================================================= */
+
+        :root {
+
+            --green-dark: #1B4332;
+            --green: #2D6A4F;
+            --green-light: #D8F3DC;
+
+            --copper: #C97B3D;
+
+            --white: #ffffff;
+            --gray-100: #f5f7f6;
+            --gray-200: #e7ece9;
+            --gray-300: #d4ddd8;
+            --gray-500: #748078;
+            --gray-700: #36423b;
+
+            --shadow:
+                0 8px 28px rgba(0,0,0,0.18);
+
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html,
+        body {
+
+            width: 100%;
+            height: 100%;
+
+            margin: 0;
+            padding: 0;
+
+            overflow: hidden;
+
+            font-family:
+                "Segoe UI",
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background:
+                var(--gray-100);
+
+        }
+
+
+        #map {
+
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+            height: 100%;
+
+        }
+
+
+        /* =========================================================
+           2. EN-TETE PRINCIPAL
+           ========================================================= */
+
+        .topbar {
+
+            position: absolute;
+
+            z-index: 3000;
+
+            top: 12px;
+
+            left: 50%;
+
+            transform:
+                translateX(-50%);
+
+            width:
+                min(
+                    calc(100% - 30px),
+                    1120px
+                );
+
+            min-height: 66px;
+
+            padding:
+                10px 16px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(27,67,50,0.98),
+                    rgba(45,106,79,0.96)
+                );
+
+            border:
+                1px solid
+                rgba(255,255,255,0.12);
+
+            border-radius: 14px;
+
+            box-shadow:
+                0 8px 30px rgba(0,0,0,0.25);
+
+            backdrop-filter:
+                blur(8px);
+
+        }
+
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            min-width: 0;
+
+        }
+
+
+        .brand-icon {
+
+            width: 44px;
+            height: 44px;
+
+            flex: 0 0 auto;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 12px;
+
+            background:
+                rgba(255,255,255,0.14);
+
+            font-size: 23px;
+
+        }
+
+
+        .brand-text {
+
+            min-width: 0;
+
+        }
+
+
+        .brand-text h1 {
+
+            margin: 0;
+
+            font-size: 18px;
+
+            line-height: 1.2;
+
+            font-weight: 750;
+
+            white-space: nowrap;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+        }
+
+
+        .brand-text p {
+
+            margin: 4px 0 0;
+
+            font-size: 11px;
+
+            opacity: .84;
+
+        }
+
+
+        .brand-tag {
+
+            padding: 7px 11px;
+
+            border-radius: 20px;
+
+            background:
+                rgba(255,255,255,0.12);
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            letter-spacing: .4px;
+
+            white-space: nowrap;
+
+        }
+
+
+        /* =========================================================
+           3. BARRE D'OUTILS ANALYSE
+           ========================================================= */
+
+        .toolbar {
+
+            position: absolute;
+
+            z-index: 2900;
+
+            top: 91px;
+
+            left: 50%;
+
+            transform:
+                translateX(-50%);
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            padding: 7px;
+
+            border-radius: 12px;
+
+            background:
+                rgba(255,255,255,.97);
+
+            box-shadow:
+                var(--shadow);
+
+            border:
+                1px solid
+                rgba(0,0,0,.05);
+
+        }
+
+
+        .toolbar-btn {
+
+            border: none;
+
+            border-radius: 8px;
+
+            padding:
+                8px 11px;
+
+            cursor: pointer;
+
+            color:
+                var(--green-dark);
+
+            background:
+                #eef4f0;
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+            transition:
+                .18s ease;
+
+        }
+
+
+        .toolbar-btn:hover {
+
+            color: white;
+
+            background:
+                var(--green);
+
+            transform:
+                translateY(-1px);
+
+        }
+
+
+        .toolbar-btn.primary {
+
+            color: white;
+
+            background:
+                var(--green-dark);
+
+        }
+
+
+        /* =========================================================
+           4. PANNEAU D'ANALYSE
+           ========================================================= */
+
+        .sidebar {
+
+            position: absolute;
+
+            z-index: 2500;
+
+            top: 145px;
+
+            left: 14px;
+
+            width: 365px;
+
+            max-height:
+                calc(100vh - 160px);
+
+            overflow-y: auto;
+
+            padding: 14px;
+
+            border-radius: 14px;
+
+            background:
+                rgba(255,255,255,.98);
+
+            box-shadow:
+                var(--shadow);
+
+            transition:
+                transform .25s ease,
+                opacity .25s ease;
+
+        }
+
+
+        .sidebar.hidden {
+
+            transform:
+                translateX(
+                    calc(-100% - 25px)
+                );
+
+            opacity: 0;
+
+            pointer-events:
+                none;
+
+        }
+
+
+        .sidebar::-webkit-scrollbar {
+
+            width: 7px;
+
+        }
+
+
+        .sidebar::-webkit-scrollbar-thumb {
+
+            background:
+                #bcc8c1;
+
+            border-radius:
+                20px;
+
+        }
+
+
+        .section-title {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .section-title h2 {
+
+            margin: 0;
+
+            color:
+                var(--green-dark);
+
+            font-size: 17px;
+
+        }
+
+
+        .section-title span {
+
+            color:
+                var(--gray-500);
+
+            font-size: 10px;
+
+        }
+
+
+        /* =========================================================
+           5. CARTES KPI
+           ========================================================= */
+
+        .kpi-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 8px;
+
+        }
+
+
+        .kpi {
+
+            padding: 11px;
+
+            border-radius: 11px;
+
+            border:
+                1px solid
+                var(--gray-200);
+
+            background:
+                #f6f9f7;
+
+        }
+
+
+        .kpi-label {
+
+            color:
+                var(--gray-500);
+
+            font-size: 9px;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                .55px;
+
+        }
+
+
+        .kpi-value {
+
+            margin-top: 3px;
+
+            color:
+                var(--green-dark);
+
+            font-size: 22px;
+
+            font-weight: 800;
+
+        }
+
+
+        /* =========================================================
+           6. FILTRES
+           ========================================================= */
+
+        .filter-box {
+
+            display: grid;
+
+            gap: 8px;
+
+        }
+
+
+        .filter-label {
+
+            color:
+                var(--gray-700);
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+        }
+
+
+        .filter-input,
+        .filter-select {
+
+            width: 100%;
+
+            padding:
+                9px 10px;
+
+            border:
+                1px solid
+                var(--gray-300);
+
+            border-radius: 8px;
+
+            outline: none;
+
+            background: white;
+
+            font-size: 11px;
+
+        }
+
+
+        .filter-input:focus,
+        .filter-select:focus {
+
+            border-color:
+                var(--green);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(45,106,79,.10);
+
+        }
+
+
+        .filter-row {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr auto;
+
+            gap: 7px;
+
+        }
+
+
+        .small-btn {
+
+            padding:
+                9px 12px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            color: white;
+
+            background:
+                var(--green);
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+        }
+
+
+        .small-btn.reset {
+
+            color:
+                var(--green-dark);
+
+            background:
+                var(--green-light);
+
+        }
+
+
+        /* =========================================================
+           7. SECTIONS
+           ========================================================= */
+
+        .panel-section {
+
+            margin-top: 14px;
+
+            padding-top: 12px;
+
+            border-top:
+                1px solid
+                var(--gray-200);
+
+        }
+
+
+        .panel-section h3 {
+
+            margin:
+                0 0 9px;
+
+            color:
+                var(--green-dark);
+
+            font-size: 12px;
+
+        }
+
+
+        /* =========================================================
+           8. GRAPHIQUES
+           ========================================================= */
+
+        .chart-container {
+
+            height: 200px;
+
+            position:
+                relative;
+
+        }
+
+
+        /* =========================================================
+           9. TABLEAUX
+           ========================================================= */
+
+        .table-scroll {
+
+            width: 100%;
+
+            max-height: 250px;
+
+            overflow: auto;
+
+            border:
+                1px solid
+                var(--gray-200);
+
+            border-radius: 8px;
+
+        }
+
+
+        table {
+
+            width: 100%;
+
+            border-collapse:
+                collapse;
+
+        }
+
+
+        .data-table {
+
+            font-size: 10px;
+
+        }
+
+
+        .data-table th {
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 2;
+
+            padding: 8px;
+
+            color: white;
+
+            background:
+                var(--green-dark);
+
+            text-align: left;
+
+        }
+
+
+        .data-table td {
+
+            padding: 7px 8px;
+
+            border-bottom:
+                1px solid
+                #edf1ee;
+
+        }
+
+
+        .data-table tr {
+
+            cursor: pointer;
+
+        }
+
+
+        .data-table tr:hover {
+
+            background:
+                #f1f7f3;
+
+        }
+
+
+        /* =========================================================
+           10. MODAL DES DONNEES
+           ========================================================= */
+
+        .modal-overlay {
+
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 6000;
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background:
+                rgba(0,0,0,.54);
+
+            padding: 15px;
+
+        }
+
+
+        .modal-overlay.show {
+
+            display: flex;
+
+        }
+
+
+        .modal {
+
+            width:
+                min(
+                    1100px,
+                    100%
+                );
+
+            max-height:
+                90vh;
+
+            overflow: hidden;
+
+            border-radius: 15px;
+
+            background: white;
+
+            box-shadow:
+                0 20px 60px
+                rgba(0,0,0,.34);
+
+            display:
+                flex;
+
+            flex-direction:
+                column;
+
+        }
+
+
+        .modal-header {
+
+            padding:
+                15px 18px;
+
+            display: flex;
+
+            justify-content:
+                space-between;
+
+            align-items:
+                center;
+
+            color: white;
+
+            background:
+                var(--green-dark);
+
+        }
+
+
+        .modal-header h2 {
+
+            margin: 0;
+
+            font-size: 17px;
+
+        }
+
+
+        .modal-close {
+
+            border: none;
+
+            width: 34px;
+            height: 34px;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            color: white;
+
+            background:
+                rgba(255,255,255,.12);
+
+            font-size: 18px;
+
+        }
+
+
+        .modal-tools {
+
+            display: flex;
+
+            flex-wrap: wrap;
+
+            gap: 7px;
+
+            padding: 10px;
+
+            background:
+                #f4f7f5;
+
+            border-bottom:
+                1px solid
+                var(--gray-200);
+
+        }
+
+
+        .dataset-btn {
+
+            padding:
+                8px 11px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            color:
+                var(--green-dark);
+
+            background:
+                white;
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+        }
+
+
+        .dataset-btn.active {
+
+            color: white;
+
+            background:
+                var(--green);
+
+        }
+
+
+        .modal-body {
+
+            overflow: auto;
+
+            padding: 12px;
+
+        }
+
+
+        .modal-body .data-table {
+
+            font-size: 11px;
+
+        }
+
+
+        /* =========================================================
+           11. INFORMATIONS
+           ========================================================= */
+
+        .info-card {
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            background:
+                #f6f9f7;
+
+            border:
+                1px solid
+                var(--gray-200);
+
+            font-size: 11px;
+
+            color:
+                var(--gray-700);
+
+            line-height: 1.55;
+
+        }
+
+
+        .info-card strong {
+
+            color:
+                var(--green-dark);
+
+        }
+
+
+        /* =========================================================
+           12. COORDONNEES
+           ========================================================= */
+
+        .coordinates {
+
+            padding:
+                6px 9px;
+
+            border-radius: 7px;
+
+            background:
+                rgba(255,255,255,.97);
+
+            box-shadow:
+                0 2px 8px
+                rgba(0,0,0,.2);
+
+            color:
+                #28332e;
+
+            font-family:
+                monospace;
+
+            font-size: 10px;
+
+        }
+
+
+        /* =========================================================
+           13. CONTROLES PERSONNALISES
+           ========================================================= */
+
+        .map-control-box {
+
+            background:
+                rgba(255,255,255,.97);
+
+            border-radius: 9px;
+
+            box-shadow:
+                0 3px 10px
+                rgba(0,0,0,.2);
+
+        }
+
+
+        .map-control-button {
+
+            width: 34px;
+            height: 34px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+
+            color:
+                var(--green-dark);
+
+            font-size: 18px;
+
+        }
+
+
+        .map-control-button:hover {
+
+            background:
+                #eef4f0;
+
+        }
+
+
+        .north-control {
+
+            width: 50px;
+
+            padding:
+                5px;
+
+            text-align:
+                center;
+
+            background:
+                rgba(255,255,255,.97);
+
+            border-radius:
+                9px;
+
+            box-shadow:
+                0 3px 10px
+                rgba(0,0,0,.2);
+
+        }
+
+
+        .north-arrow {
+
+            font-size:
+                29px;
+
+            line-height:
+                25px;
+
+        }
+
+
+        /* =========================================================
+           14. POPUP PROFESSIONNELLE
+           ========================================================= */
+
+        .popup-title {
+
+            margin-bottom:
+                8px;
+
+            padding-bottom:
+                7px;
+
+            color:
+                var(--green-dark);
+
+            border-bottom:
+                2px solid
+                var(--green);
+
+            font-size:
+                15px;
+
+            font-weight:
+                800;
+
+        }
+
+
+        .popup-table {
+
+            width:
+                100%;
+
+            border-collapse:
+                collapse;
+
+            font-size:
+                11px;
+
+        }
+
+
+        .popup-table th {
+
+            padding:
+                5px;
+
+            color:
+                var(--gray-500);
+
+            text-align:
+                left;
+
+            vertical-align:
+                top;
+
+        }
+
+
+        .popup-table td {
+
+            padding:
+                5px;
+
+            color:
+                #28332e;
+
+            font-weight:
+                650;
+
+            text-align:
+                right;
+
+            vertical-align:
+                top;
+
+        }
+
+
+        /* =========================================================
+           15. RESPONSIVE
+           ========================================================= */
+
+        @media (max-width: 900px) {
+
+            .sidebar {
+
+                width:
+                    320px;
+
+            }
+
+            .brand-tag {
+
+                display:
+                    none;
+
+            }
+
+        }
+
+
+        @media (max-width: 650px) {
+
+            .topbar {
+
+                top: 7px;
+
+                min-height:
+                    57px;
+
+                width:
+                    calc(100% - 14px);
+
+                padding:
+                    8px 10px;
+
+            }
+
+
+            .brand-icon {
+
+                width: 37px;
+                height: 37px;
+
+                font-size:
+                    19px;
+
+            }
+
+
+            .brand-text h1 {
+
+                font-size:
+                    12px;
+
+            }
+
+
+            .brand-text p {
+
+                font-size:
+                    9px;
+
+            }
+
+
+            .toolbar {
+
+                top:
+                    72px;
+
+                width:
+                    calc(100% - 14px);
+
+                justify-content:
+                    center;
+
+                overflow-x:
+                    auto;
+
+            }
+
+
+            .toolbar-btn {
+
+                white-space:
+                    nowrap;
+
+            }
+
+
+            .sidebar {
+
+                left: 7px;
+
+                top:
+                    120px;
+
+                width:
+                    calc(100% - 14px);
+
+                max-height:
+                    45vh;
+
+            }
+
+
+            .kpi-value {
+
+                font-size:
+                    18px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <!-- =========================================================
+         CARTE PRINCIPALE
+         ========================================================= -->
+
+    <div id="map"></div>
+
+
+    <!-- =========================================================
+         EN-TETE
+         ========================================================= -->
+
+    <header class="topbar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                🌿
+            </div>
+
+            <div class="brand-text">
+
+                <h1>
+                    TYPES DE VÉGÉTATION DE LA CÔTE D'IVOIRE
+                </h1>
+
+                <p>
+                    WebGIS interactif • Cartographie • Analyse spatiale
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="brand-tag">
+            GÉOFORMAT • WEBGIS
+        </div>
+
+    </header>
+
+
+    <!-- =========================================================
+         BARRE D'OUTILS
+         ========================================================= -->
+
+    <div class="toolbar">
+
+        <button
+            class="toolbar-btn primary"
+            onclick="toggleSidebar()">
+
+            ☰ Analyse
+
+        </button>
+
+
+        <button
+            class="toolbar-btn"
+            onclick="openDataModal('vegetation')">
+
+            📊 Données
+
+        </button>
+
+
+        <button
+            class="toolbar-btn"
+            onclick="openProjectInfo()">
+
+            ℹ Projet
+
+        </button>
+
+
+        <button
+            class="toolbar-btn"
+            onclick="resetAllFilters()">
+
+            ↻ Réinitialiser
+
+        </button>
+
+    </div>
+
+
+    <!-- =========================================================
+         PANNEAU LATERAL
+         ========================================================= -->
+
+    <aside
+        id="sidebar"
+        class="sidebar">
+
+
+        <div class="section-title">
+
+            <h2>
+                Tableau de bord
+            </h2>
+
+            <span>
+                Analyse spatiale
+            </span>
+
+        </div>
+
+
+        <!-- =====================================================
+             KPI
+             ===================================================== -->
+
+        <div class="kpi-grid">
+
+
+            <div class="kpi">
+
+                <div class="kpi-label">
+                    Zones végétales
+                </div>
+
+                <div
+                    id="kpiVegetation"
+                    class="kpi-value">
+
+                    -
+
+                </div>
+
+            </div>
+
+
+            <div class="kpi">
+
+                <div class="kpi-label">
+                    Forêts classées
+                </div>
+
+                <div
+                    id="kpiForests"
+                    class="kpi-value">
+
+                    -
+
+                </div>
+
+            </div>
+
+
+            <div class="kpi">
+
+                <div class="kpi-label">
+                    Parcs nationaux
+                </div>
+
+                <div
+                    id="kpiParks"
+                    class="kpi-value">
+
+                    -
+
+                </div>
+
+            </div>
+
+
+            <div class="kpi">
+
+                <div class="kpi-label">
+                    Surface forestière
+                </div>
+
+                <div
+                    id="kpiForestArea"
+                    class="kpi-value">
+
+                    -
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================================
+             FILTRE VEGETATION
+             ===================================================== -->
+
+        <section class="panel-section">
+
+            <h3>
+                Filtrer les types de végétation
+            </h3>
+
+
+            <div class="filter-box">
+
+                <div>
+
+                    <div class="filter-label">
+                        Secteur
+                    </div>
+
+                    <select
+                        id="sectorFilter"
+                        class="filter-select"
+                        onchange="filterVegetation()">
+
+                        <option value="">
+                            Tous les secteurs
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="filter-row">
+
+                    <button
+                        class="small-btn reset"
+                        onclick="resetVegetationFilter()">
+
+                        Réinitialiser
+
+                    </button>
+
+                    <button
+                        class="small-btn"
+                        onclick="openDataModal('vegetation')">
+
+                        Voir les données
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             RECHERCHE DES FORETS
+             ===================================================== -->
+
+        <section class="panel-section">
+
+            <h3>
+                Rechercher une forêt classée
+            </h3>
+
+
+            <div class="filter-row">
+
+                <input
+                    type="text"
+                    id="forestSearch"
+                    class="filter-input"
+                    placeholder="Nom de la forêt..."
+                    oninput="searchForests()">
+
+
+                <button
+                    class="small-btn reset"
+                    onclick="resetForestSearch()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             GRAPHIQUE VEGETATION
+             ===================================================== -->
+
+        <section class="panel-section">
+
+            <h3>
+                Répartition des secteurs
+            </h3>
+
+            <div class="chart-container">
+
+                <canvas
+                    id="vegetationChart">
+                </canvas>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             TABLE SECTEURS
+             ===================================================== -->
+
+        <section class="panel-section">
+
+            <h3>
+                Synthèse des secteurs
+            </h3>
+
+
+            <div class="table-scroll">
+
+                <table
+                    class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Secteur
+                            </th>
+
+                            <th>
+                                Nombre
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody
+                        id="sectorTable">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             GRAPHIQUE FORETS
+             ===================================================== -->
+
+        <section class="panel-section">
+
+            <h3>
+                Forêts classées - principales superficies
+            </h3>
+
+            <div class="chart-container">
+
+                <canvas
+                    id="forestChart">
+                </canvas>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             TABLE FORETS
+             ===================================================== -->
+
+        <section class="panel-section">
+
+            <h3>
+                Forêts classées
+            </h3>
+
+
+            <div class="table-scroll">
+
+                <table
+                    class="data-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Forêt
+                            </th>
+
+                            <th>
+                                ha
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody
+                        id="forestTable">
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             INFORMATIONS
+             ===================================================== -->
+
+        <section class="panel-section">
+
+            <h3>
+                À propos
+            </h3>
+
+
+            <div class="info-card">
+
+                <strong>
+                    WebGIS environnemental
+                </strong>
+
+                <br><br>
+
+                Cette plateforme permet d'explorer les types
+                de végétation, les forêts classées, les parcs
+                nationaux et les limites administratives de la
+                Côte d'Ivoire.
+
+                <br><br>
+
+                Les données peuvent être consultées directement
+                sur la carte ou dans les tableaux.
+
+            </div>
+
+        </section>
+
+    </aside>
+
+
+    <!-- =========================================================
+         MODAL DES DONNEES
+         ========================================================= -->
+
+    <div
+        id="dataModal"
+        class="modal-overlay">
+
+
+        <div class="modal">
+
+
+            <div class="modal-header">
+
+                <h2 id="modalTitle">
+                    Données
+                </h2>
+
+
+                <button
+                    class="modal-close"
+                    onclick="closeDataModal()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div class="modal-tools">
+
+                <button
+                    class="dataset-btn active"
+                    id="btnVegetation"
+                    onclick="loadDataset('vegetation')">
+
+                    Végétation
+
+                </button>
+
+
+                <button
+                    class="dataset-btn"
+                    id="btnForests"
+                    onclick="loadDataset('forests')">
+
+                    Forêts classées
+
+                </button>
+
+
+                <button
+                    class="dataset-btn"
+                    id="btnParks"
+                    onclick="loadDataset('parks')">
+
+                    Parcs nationaux
+
+                </button>
+
+
+                <button
+                    class="dataset-btn"
+                    id="btnAdmin"
+                    onclick="loadDataset('admin')">
+
+                    Limites administratives
+
+                </button>
+
+
+                <button
+                    class="dataset-btn"
+                    onclick="exportCurrentDatasetCSV()">
+
+                    ⬇ Exporter CSV
+
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+                <div
+                    class="table-scroll"
+                    style="max-height:65vh;">
+
+                    <table
+                        class="data-table">
+
+                        <thead id="modalTableHead">
+                        </thead>
+
+                        <tbody id="modalTableBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         MODAL INFORMATIONS DU PROJET
+         ========================================================= -->
+
+    <div
+        id="infoModal"
+        class="modal-overlay">
+
+
+        <div class="modal">
+
+
+            <div class="modal-header">
+
+                <h2>
+                    À propos du WebGIS
+                </h2>
+
+
+                <button
+                    class="modal-close"
+                    onclick="closeProjectInfo()">
+
+                    ×
+
+                </button>
+
+            </div>
+
+
+            <div
+                class="modal-body">
+
+                <div class="info-card">
+
+                    <strong>
+                        Carte des types de végétation
+                        de la Côte d'Ivoire
+                    </strong>
+
+                    <br><br>
+
+                    Cette application cartographique interactive
+                    a été conçue à partir de données SIG préparées
+                    dans QGIS.
+
+                    <br><br>
+
+                    <strong>
+                        Couches disponibles :
+                    </strong>
+
+                    <br>
+
+                    • Types de végétation<br>
+
+                    • Forêts classées<br>
+
+                    • Parcs nationaux<br>
+
+                    • Limites administratives
+
+                    <br><br>
+
+                    <strong>
+                        Outils :
+                    </strong>
+
+                    <br>
+
+                    • Recherche géographique<br>
+
+                    • Localisation<br>
+
+                    • Mesure des distances et surfaces<br>
+
+                    • Changement de fond cartographique<br>
+
+                    • Filtres attributaires<br>
+
+                    • Tableaux de données<br>
+
+                    • Export CSV<br>
+
+                    • Graphiques statistiques
+
+                    <br><br>
+
+                    <strong>
+                        Technologies :
+                    </strong>
+
+                    <br>
+
+                    QGIS • qgis2web • Leaflet • JavaScript
+                    • Chart.js
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         SCRIPTS QGIS2WEB
+         ========================================================= -->
+
+    <script src="js/qgis2web_expressions.js"></script>
+
+    <script src="js/leaflet.js"></script>
+
+    <script src="js/L.Control.Layers.Tree.min.js"></script>
+
+    <script src="js/L.Control.Locate.min.js"></script>
+
+    <script src="js/leaflet.rotatedMarker.js"></script>
+
+    <script src="js/leaflet.pattern.js"></script>
+
+    <script src="js/leaflet-hash.js"></script>
+
+    <script src="js/Autolinker.min.js"></script>
+
+    <script src="js/rbush.min.js"></script>
+
+    <script src="js/labelgun.min.js"></script>
+
+    <script src="js/labels.js"></script>
+
+    <script src="js/leaflet.photon.js"></script>
+
+    <script src="js/leaflet-measure.js"></script>
+
+
+    <!-- =========================================================
+         DONNEES QGIS2WEB
+         ========================================================= -->
+
+    <script src="data/Typesdevgtation_1.js"></script>
+
+    <script src="data/Fortsclasses_2.js"></script>
+
+    <script src="data/Parcnationaux_3.js"></script>
+
+    <script src="data/Limiteadministrative_4.js"></script>
+
+
+    <!-- =========================================================
+         JAVASCRIPT PRINCIPAL
+         ========================================================= -->
+
+    <script>
+
+        /* =========================================================
+           VARIABLES GLOBALES
+           ========================================================= */
+
+        var map;
+
+        var vegetationLayer;
+        var forestLayer;
+        var parkLayer;
+        var adminLayer;
+
+        var vegetationChart = null;
+        var forestChart = null;
+
+        var currentDataset = 'vegetation';
+
+        var selectedVegetation = '';
+
+        var forestSearchText = '';
+
+
+        /* =========================================================
+           FONCTIONS UTILITAIRES
+           ========================================================= */
+
+        function getNumber(value) {
+
+            if (
+                value === null ||
+                value === undefined ||
+                value === ''
+            ) {
+
+                return 0;
+
+            }
+
+            var valueText =
+                String(value)
+                .replace(',', '.')
+                .replace(/\s/g, '');
+
+            var result =
+                parseFloat(valueText);
+
+            return isNaN(result)
+                ? 0
+                : result;
+
+        }
+
+
+        function formatNumber(
+            value,
+            decimals = 0
+        ) {
+
+            return Number(value)
+                .toLocaleString(
+                    'fr-FR',
+                    {
+                        minimumFractionDigits:
+                            decimals,
+
+                        maximumFractionDigits:
+                            decimals
+                    }
+                );
+
+        }
+
+
+        function escapeHTML(value) {
+
+            if (
+                value === null ||
+                value === undefined
+            ) {
+
+                return '';
+
+            }
+
+            return String(value)
+
+                .replace(/&/g, '&amp;')
+
+                .replace(/</g, '&lt;')
+
+                .replace(/>/g, '&gt;')
+
+                .replace(/"/g, '&quot;')
+
+                .replace(/'/g, '&#039;');
+
+        }
+
+
+        /* =========================================================
+           POPUP GENERIQUE
+           ========================================================= */
+
+        function createPopup(
+            title,
+            rows
+        ) {
+
+            var html =
+
+                '<div class="popup-title">' +
+
+                escapeHTML(title) +
+
+                '</div>' +
+
+                '<table class="popup-table">';
+
+
+            rows.forEach(
+                function(row) {
+
+                    if (
+                        row.value !== null &&
+                        row.value !== undefined &&
+                        row.value !== ''
+                    ) {
+
+                        html +=
+
+                            '<tr>' +
+
+                            '<th>' +
+
+                            escapeHTML(
+                                row.label
+                            ) +
+
+                            '</th>' +
+
+                            '<td>' +
+
+                            escapeHTML(
+                                row.value
+                            ) +
+
+                            '</td>' +
+
+                            '</tr>';
+
+                    }
+
+                }
+            );
+
+
+            html +=
+                '</table>';
+
+
+            return html;
+
+        }
+
+
+        /* =========================================================
+           1. INITIALISATION DE LA CARTE
+           ========================================================= */
+
+        map = L.map(
+            'map',
+            {
+
+                zoomControl:
+                    false,
+
+                minZoom:
+                    2,
+
+                maxZoom:
+                    24
+
+            }
+        );
+
+
+        map.fitBounds([
+
+            [
+                1.130405987417089,
+                -17.19335674856475
+            ],
+
+            [
+                14.593617515697272,
+                7.014941583043151
+            ]
+
+        ]);
+
+
+        /* Hash URL */
+
+        new L.Hash(map);
+
+
+        /* =========================================================
+           2. BOUTON ZOOM
+           ========================================================= */
+
+        L.control.zoom({
+
+            position:
+                'topleft'
+
+        }).addTo(map);
+
+
+        /* =========================================================
+           3. LOCALISATION
+           ========================================================= */
+
+        L.control.locate({
+
+            position:
+                'topleft',
+
+            locateOptions: {
+
+                maxZoom:
+                    18
+
+            }
+
+        }).addTo(map);
+
+
+        /* =========================================================
+           4. ECHELLE
+           ========================================================= */
+
+        L.control.scale({
+
+            position:
+                'bottomleft',
+
+            imperial:
+                false,
+
+            metric:
+                true
+
+        }).addTo(map);
+
+
+        /* =========================================================
+           5. FONDS CARTOGRAPHIQUES
+           ========================================================= */
+
+        var googleTerrain =
+
+            L.tileLayer(
+
+                'https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
+
+                {
+
+                    maxZoom:
+                        24,
+
+                    attribution:
+                        '© Google'
+
+                }
+
+            );
+
+
+        var googleSatellite =
+
+            L.tileLayer(
+
+                'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+
+                {
+
+                    maxZoom:
+                        24,
+
+                    attribution:
+                        '© Google'
+
+                }
+
+            );
+
+
+        var openStreetMap =
+
+            L.tileLayer(
+
+                'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+
+                {
+
+                    maxZoom:
+                        19,
+
+                    attribution:
+                        '© OpenStreetMap contributors'
+
+                }
+
+            );
+
+
+        googleTerrain.addTo(map);
+
+
+        /* =========================================================
+           6. RECHERCHE PHOTON
+           ========================================================= */
+
+        var searchResultLayer = null;
+        var searchResultMarker = null;
+
+
+        var photonControl =
+
+            L.control.photon({
+
+                url:
+                    'https://nominatim.openstreetmap.org/search?format=geojson&addressdetails=1&',
+
+                position:
+                    'topleft',
+
+                includePosition:
+                    true,
+
+                feedbackLabel:
+                    ''
+
+            })
+
+
+            .addTo(map);
+
+
+        photonControl.on(
+
+            'selected',
+
+            function(e) {
+
+                if (
+                    searchResultLayer
+                ) {
+
+                    map.removeLayer(
+                        searchResultLayer
+                    );
+
+                }
+
+
+                if (
+                    searchResultMarker
+                ) {
+
+                    map.removeLayer(
+                        searchResultMarker
+                    );
+
+                }
+
+
+                searchResultLayer =
+
+                    L.geoJSON(
+                        e.choice
+                    ).addTo(map);
+
+
+                if (
+                    searchResultLayer.getLayers().length
+                ) {
+
+                    var first =
+                        searchResultLayer
+                        .getLayers()[0];
+
+
+                    var coords = null;
+
+
+                    if (
+                        first.getLatLng
+                    ) {
+
+                        coords =
+                            first.getLatLng();
+
+                    }
+
+
+                    if (
+                        coords
+                    ) {
+
+                        var label =
+
+                            e.choice.properties.label ||
+
+                            e.choice.properties.display_name ||
+
+                            'Résultat';
+
+
+                        searchResultMarker =
+
+                            L.marker(
+                                coords
+                            )
+
+                            .bindPopup(
+                                escapeHTML(
+                                    label
+                                )
+                            )
+
+                            .addTo(map);
+
+
+                        map.setView(
+                            coords,
+                            14
+                        );
+
+                    }
+
+                }
+
+            }
+
+        );
+
+
+        /* =========================================================
+           7. BOUTON RETOUR ACCUEIL
+           ========================================================= */
+
+        var HomeControl =
+            L.Control.extend({
+
+                options: {
+                    position:
+                        'topleft'
+                },
+
+                onAdd:
+                    function() {
+
+                        var container =
+                            L.DomUtil.create(
+                                'div',
+                                'leaflet-bar map-control-box'
+                            );
+
+
+                        var button =
+                            L.DomUtil.create(
+                                'div',
+                                'map-control-button',
+                                container
+                            );
+
+
+                        button.innerHTML =
+                            '⌂';
+
+
+                        button.title =
+                            'Retour à la Côte d’Ivoire';
+
+
+                        button.onclick =
+                            function() {
+
+                                map.fitBounds([
+
+                                    [
+                                        1.130405987417089,
+                                        -17.19335674856475
+                                    ],
+
+                                    [
+                                        14.593617515697272,
+                                        7.014941583043151
+                                    ]
+
+                                ]);
+
+                            };
+
+
+                        return container;
+
+                    }
+
+            });
+
+
+        map.addControl(
+            new HomeControl()
+        );
+
+
+        /* =========================================================
+           8. BOUTON PLEIN ECRAN
+           ========================================================= */
+
+        var FullscreenControl =
+            L.Control.extend({
+
+                options: {
+                    position:
+                        'topleft'
+                },
+
+                onAdd:
+                    function() {
+
+                        var container =
+                            L.DomUtil.create(
+                                'div',
+                                'leaflet-bar map-control-box'
+                            );
+
+
+                        var button =
+                            L.DomUtil.create(
+                                'div',
+                                'map-control-button',
+                                container
+                            );
+
+
+                        button.innerHTML =
+                            '⛶';
+
+
+                        button.title =
+                            'Plein écran';
+
+
+                        button.onclick =
+                            function() {
+
+                                var element =
+                                    document.getElementById(
+                                        'map'
+                                    );
+
+
+                                if (
+                                    !document.fullscreenElement
+                                ) {
+
+                                    if (
+                                        element.requestFullscreen
+                                    ) {
+
+                                        element.requestFullscreen();
+
+                                    }
+
+                                } else {
+
+                                    document.exitFullscreen();
+
+                                }
+
+                            };
+
+
+                        return container;
+
+                    }
+
+            });
+
+
+        map.addControl(
+            new FullscreenControl()
+        );
+
+
+        /* =========================================================
+           9. FLECHE NORD
+           ========================================================= */
+
+        var NorthControl =
+            L.Control.extend({
+
+                options: {
+                    position:
+                        'topright'
+                },
+
+                onAdd:
+                    function() {
+
+                        var container =
+                            L.DomUtil.create(
+                                'div',
+                                'north-control'
+                            );
+
+
+                        container.innerHTML =
+
+                            '<div>N</div>' +
+
+                            '<div class="north-arrow">↑</div>';
+
+
+                        return container;
+
+                    }
+
+            });
+
+
+        map.addControl(
+            new NorthControl()
+        );
+
+
+        /* =========================================================
+           10. COORDONNEES SOURIS
+           ========================================================= */
+
+        var CoordinatesControl =
+            L.Control.extend({
+
+                options: {
+                    position:
+                        'bottomright'
+                },
+
+                onAdd:
+                    function(map) {
+
+                        var container =
+                            L.DomUtil.create(
+                                'div',
+                                'coordinates'
+                            );
+
+
+                        container.innerHTML =
+                            'Lat: -- | Lon: --';
+
+
+                        map.on(
+                            'mousemove',
+                            function(e) {
+
+                                container.innerHTML =
+
+                                    'Lat: ' +
+
+                                    e.latlng.lat
+                                        .toFixed(5) +
+
+                                    ' | Lon: ' +
+
+                                    e.latlng.lng
+                                        .toFixed(5);
+
+                            }
+                        );
+
+
+                        return container;
+
+                    }
+
+            });
+
+
+        map.addControl(
+            new CoordinatesControl()
+        );
+
+
+        /* =========================================================
+           11. MESURE
+           ========================================================= */
+
+        var measureControl =
+
+            new L.Control.Measure({
+
+                position:
+                    'topleft',
+
+                primaryLengthUnit:
+                    'meters',
+
+                secondaryLengthUnit:
+                    'kilometers',
+
+                primaryAreaUnit:
+                    'sqmeters',
+
+                secondaryAreaUnit:
+                    'hectares'
+
+            });
+
+
+        measureControl.addTo(map);
+
+
+        var measureButton =
+
+            document.getElementsByClassName(
+
+                'leaflet-control-measure-toggle'
+
+            )[0];
+
+
+        if (
+            measureButton
+        ) {
+
+            measureButton.innerHTML = '';
+
+            measureButton.className +=
+                ' fas fa-ruler';
+
+        }
+
+
+        /* =========================================================
+           12. VEGETATION
+           ========================================================= */
+
+        function vegetationStyle(
+            feature
+        ) {
+
+            var sector =
+
+                String(
+                    feature.properties[
+                        'SECTEUR'
+                    ] || ''
+                );
+
+
+            var colors = {
+
+                'LITTORAL':
+                    'rgba(0,68,27,1)',
+
+                'MESOPHILE':
+                    'rgba(29,134,65,1)',
+
+                'MONTAGNARD':
+                    'rgba(85,181,103,1)',
+
+                'OMBROPHILE':
+                    'rgba(158,215,152,1)',
+
+                'SOUDANAIS':
+                    'rgba(213,239,207,1)',
+
+                'SUB-SOUDANAIS':
+                    'rgba(247,252,245,1)'
+
+            };
+
+
+            var isVisible =
+
+                !selectedVegetation ||
+
+                selectedVegetation ===
+                    sector;
+
+
+            return {
+
+                color:
+                    'rgba(35,35,35,1)',
+
+                weight:
+                    1,
+
+                fillColor:
+                    colors[sector] ||
+                    '#b8c9bd',
+
+                fillOpacity:
+                    isVisible
+                    ? 0.84
+                    : 0.03,
+
+                opacity:
+                    isVisible
+                    ? 1
+                    : 0.05
+
+            };
+
+        }
+
+
+        function vegetationPopup(
+            feature,
+            layer
+        ) {
+
+            layer.bindPopup(
+
+                createPopup(
+
+                    'Type de végétation',
+
+                    [
+
+                        {
+                            label:
+                                'Secteur',
+
+                            value:
+                                feature.properties[
+                                    'SECTEUR'
+                                ]
+                        },
+
+                        {
+                            label:
+                                'Domaine',
+
+                            value:
+                                feature.properties[
+                                    'DOMAINE'
+                                ]
+                        },
+
+                        {
+                            label:
+                                'Description',
+
+                            value:
+                                feature.properties[
+                                    'DESCRIPTIO'
+                                ]
+                        },
+
+                        {
+                            label:
+                                'Surface',
+
+                            value:
+                                feature.properties[
+                                    'AREA'
+                                ]
+
+                        }
+
+                    ]
+
+                ),
+
+                {
+                    maxWidth:
+                        430
+                }
+
+            );
+
+        }
+
+
+        vegetationLayer =
+
+            L.geoJSON(
+
+                json_Typesdevgtation_1,
+
+                {
+
+                    style:
+                        vegetationStyle,
+
+                    onEachFeature:
+                        vegetationPopup
+
+                }
+
+            );
+
+
+        vegetationLayer.addTo(map);
+
+
+        /* =========================================================
+           13. FORETS CLASSEES
+           ========================================================= */
+
+        function forestStyle(
+            feature
+        ) {
+
+            var name =
+
+                String(
+                    feature.properties[
+                        'NOM_FORET'
+                    ] || ''
+                )
+                .toLowerCase();
+
+
+            var visible =
+
+                !forestSearchText ||
+
+                name.includes(
+                    forestSearchText
+                );
+
+
+            return {
+
+                color:
+                    '#1B4332',
+
+                weight:
+                    visible ? 2.4 : 0,
+
+                fillColor:
+                    '#77ff6e',
+
+                fillOpacity:
+                    visible ? .48 : 0,
+
+                opacity:
+                    visible ? 1 : 0
+
+            };
+
+        }
+
+
+        function forestPopup(
+            feature,
+            layer
+        ) {
+
+            layer.bindPopup(
+
+                createPopup(
+
+                    'Forêt classée',
+
+                    [
+
+                        {
+                            label:
+                                'Nom',
+
+                            value:
+                                feature.properties[
+                                    'NOM_FORET'
+                                ]
+                        },
+
+                        {
+                            label:
+                                'Superficie',
+
+                            value:
+                                feature.properties[
+                                    'SURFACE_HA'
+                                ] !== null
+
+                                ?
+
+                                formatNumber(
+
+                                    getNumber(
+                                        feature.properties[
+                                            'SURFACE_HA'
+                                        ]
+                                    ),
+                                    2
+
+                                ) + ' ha'
+
+                                :
+
+                                ''
+
+                        },
+
+                        {
+                            label:
+                                'Financement',
+
+                            value:
+                                feature.properties[
+                                    'FINANCEMEN'
+                                ]
+                        },
+
+                        {
+                            label:
+                                'Identifiant',
+
+                            value:
+                                feature.properties[
+                                    'FORET_LL_'
+                                ]
+                        }
+
+                    ]
+
+                ),
+
+                {
+                    maxWidth:
+                        430
+                }
+
+            );
+
+        }
+
+
+        forestLayer =
+
+            L.geoJSON(
+
+                json_Fortsclasses_2,
+
+                {
+
+                    style:
+                        forestStyle,
+
+                    onEachFeature:
+                        forestPopup
+
+                }
+
+            );
+
+
+        forestLayer.addTo(map);
+
+
+        /* =========================================================
+           14. PARCS NATIONAUX
+           ========================================================= */
+
+        function parkStyle() {
+
+            return {
+
+                color:
+                    'rgba(215,25,28,1)',
+
+                weight:
+                    2,
+
+                fillColor:
+                    '#819A71',
+
+                fillOpacity:
+                    .58
+
+            };
+
+        }
+
+
+        function parkPopup(
+            feature,
+            layer
+        ) {
+
+            layer.bindPopup(
+
+                createPopup(
+
+                    'Parc national',
+
+                    [
+
+                        {
+                            label:
+                                'Nom',
+
+                            value:
+                                feature.properties[
+                                    'NOM_FORET'
+                                ]
+                        },
+
+                        {
+                            label:
+                                'Superficie',
+
+                            value:
+
+                                feature.properties[
+                                    'SURFACE_HA'
+                                ] !== null
+
+                                ?
+
+                                formatNumber(
+
+                                    getNumber(
+                                        feature.properties[
+                                            'SURFACE_HA'
+                                        ]
+                                    ),
+                                    2
+
+                                ) + ' ha'
+
+                                :
+
+                                ''
+
+                        },
+
+                        {
+                            label:
+                                'Financement',
+
+                            value:
+                                feature.properties[
+                                    'FINANCEMEN'
+                                ]
+                        }
+
+                    ]
+
+                )
+
+            );
+
+        }
+
+
+        parkLayer =
+
+            L.geoJSON(
+
+                json_Parcnationaux_3,
+
+                {
+
+                    style:
+                        parkStyle,
+
+                    onEachFeature:
+                        parkPopup
+
+                }
+
+            );
+
+
+        parkLayer.addTo(map);
+
+
+        /* =========================================================
+           15. LIMITES ADMINISTRATIVES
+           ========================================================= */
+
+        adminLayer =
+
+            L.geoJSON(
+
+                json_Limiteadministrative_4,
+
+                {
+
+                    style: {
+
+                        color:
+                            '#222',
+
+                        weight:
+                            2,
+
+                        fillOpacity:
+                            0
+
+                    },
+
+                    onEachFeature:
+                        function(
+                            feature,
+                            layer
+                        ) {
+
+                            layer.bindPopup(
+
+                                createPopup(
+
+                                    'Limite administrative',
+
+                                    [
+
+                                        {
+                                            label:
+                                                'LAYER',
+
+                                            value:
+                                                feature.properties[
+                                                    'LAYER'
+                                                ]
+                                        },
+
+                                        {
+                                            label:
+                                                'LEFT_FID',
+
+                                            value:
+                                                feature.properties[
+                                                    'LEFT_FID'
+                                                ]
+                                        },
+
+                                        {
+                                            label:
+                                                'RIGHT_FID',
+
+                                            value:
+                                                feature.properties[
+                                                    'RIGHT_FID'
+                                                ]
+                                        },
+
+                                        {
+                                            label:
+                                                'LENGTH',
+
+                                            value:
+                                                feature.properties[
+                                                    'LENGTH'
+                                                ]
+                                        }
+
+                                    ]
+
+                                )
+
+                            );
+
+                        }
+
+                }
+
+            );
+
+
+        adminLayer.addTo(map);
+
+
+        /* =========================================================
+           16. CONTROLE DES COUCHES
+           ========================================================= */
+
+        var baseLayers = {
+
+            'Google Terrain':
+                googleTerrain,
+
+            'Google Satellite':
+                googleSatellite,
+
+            'OpenStreetMap':
+                openStreetMap
+
+        };
+
+
+        var overlays = {
+
+            'Types de végétation':
+                vegetationLayer,
+
+            'Forêts classées':
+                forestLayer,
+
+            'Parcs nationaux':
+                parkLayer,
+
+            'Limites administratives':
+                adminLayer
+
+        };
+
+
+        L.control.layers(
+
+            baseLayers,
+
+            overlays,
+
+            {
+
+                position:
+                    'topright',
+
+                collapsed:
+                    false
+
+            }
+
+        ).addTo(map);
+
+
+        /* =========================================================
+           17. CONSTRUCTION DU FILTRE SECTEUR
+           ========================================================= */
+
+        function populateSectorFilter() {
+
+            var select =
+                document.getElementById(
+                    'sectorFilter'
+                );
+
+
+            var sectors = {};
+
+
+            json_Typesdevgtation_1.features
+                .forEach(
+
+                    function(feature) {
+
+                        var sector =
+                            feature.properties[
+                                'SECTEUR'
+                            ];
+
+
+                        if (
+                            sector
+                        ) {
+
+                            sectors[
+                                sector
+                            ] = true;
+
+                        }
+
+                    }
+
+                );
+
+
+            Object.keys(sectors)
+
+                .sort()
+
+                .forEach(
+
+                    function(sector) {
+
+                        var option =
+                            document.createElement(
+                                'option'
+                            );
+
+
+                        option.value =
+                            sector;
+
+
+                        option.textContent =
+                            sector;
+
+
+                        select.appendChild(
+                            option
+                        );
+
+                    }
+
+                );
+
+        }
+
+
+        /* =========================================================
+           18. FILTRE VEGETATION
+           ========================================================= */
+
+        function filterVegetation() {
+
+            selectedVegetation =
+
+                document.getElementById(
+                    'sectorFilter'
+                ).value;
+
+
+            vegetationLayer.setStyle(
+                vegetationStyle
+            );
+
+        }
+
+
+        function resetVegetationFilter() {
+
+            selectedVegetation =
+                '';
+
+
+            document.getElementById(
+                'sectorFilter'
+            ).value =
+                '';
+
+
+            vegetationLayer.setStyle(
+                vegetationStyle
+            );
+
+        }
+
+
+        /* =========================================================
+           19. RECHERCHE FORETS
+           ========================================================= */
+
+        function searchForests() {
+
+            forestSearchText =
+
+                document.getElementById(
+                    'forestSearch'
+                )
+                .value
+                .trim()
+                .toLowerCase();
+
+
+            forestLayer.setStyle(
+                forestStyle
+            );
+
+            buildForestTable();
+
+        }
+
+
+        function resetForestSearch() {
+
+            document.getElementById(
+                'forestSearch'
+            ).value =
+                '';
+
+
+            forestSearchText =
+                '';
+
+
+            forestLayer.setStyle(
+                forestStyle
+            );
+
+
+            buildForestTable();
+
+        }
+
+
+        /* =========================================================
+           20. KPI
+           ========================================================= */
+
+        function updateKPIs() {
+
+            document.getElementById(
+                'kpiVegetation'
+            ).textContent =
+
+                formatNumber(
+                    json_Typesdevgtation_1.features.length
+                );
+
+
+            document.getElementById(
+                'kpiForests'
+            ).textContent =
+
+                formatNumber(
+                    json_Fortsclasses_2.features.length
+                );
+
+
+            document.getElementById(
+                'kpiParks'
+            ).textContent =
+
+                formatNumber(
+                    json_Parcnationaux_3.features.length
+                );
+
+
+            var totalArea = 0;
+
+
+            json_Fortsclasses_2.features
+                .forEach(
+
+                    function(feature) {
+
+                        totalArea +=
+
+                            getNumber(
+
+                                feature.properties[
+                                    'SURFACE_HA'
+                                ]
+
+                            );
+
+                    }
+
+                );
+
+
+            document.getElementById(
+                'kpiForestArea'
+            ).textContent =
+
+                formatNumber(
+                    totalArea,
+                    0
+                ) +
+
+                ' ha';
+
+        }
+
+
+        /* =========================================================
+           21. ANALYSE DES SECTEURS
+           ========================================================= */
+
+        function getSectorStatistics() {
+
+            var stats = {};
+
+
+            json_Typesdevgtation_1.features
+                .forEach(
+
+                    function(feature) {
+
+                        var sector =
+
+                            feature.properties[
+                                'SECTEUR'
+                            ] ||
+
+                            'Non renseigné';
+
+
+                        stats[sector] =
+
+                            (stats[sector] || 0) +
+                            1;
+
+                    }
+
+                );
+
+
+            return stats;
+
+        }
+
+
+        /* =========================================================
+           22. TABLE SECTEURS
+           ========================================================= */
+
+        function buildSectorTable() {
+
+            var stats =
+                getSectorStatistics();
+
+
+            var tbody =
+                document.getElementById(
+                    'sectorTable'
+                );
+
+
+            tbody.innerHTML =
+                '';
+
+
+            Object.entries(stats)
+
+                .sort(
+                    function(a,b) {
+
+                        return b[1] - a[1];
+
+                    }
+                )
+
+                .forEach(
+
+                    function(item) {
+
+                        tbody.innerHTML +=
+
+                            '<tr>' +
+
+                            '<td>' +
+
+                            escapeHTML(
+                                item[0]
+                            ) +
+
+                            '</td>' +
+
+                            '<td>' +
+
+                            formatNumber(
+                                item[1]
+                            ) +
+
+                            '</td>' +
+
+                            '</tr>';
+
+                    }
+
+                );
+
+        }
+
+
+        /* =========================================================
+           23. TABLE FORETS
+           ========================================================= */
+
+        function buildForestTable() {
+
+            var tbody =
+                document.getElementById(
+                    'forestTable'
+                );
+
+
+            tbody.innerHTML =
+                '';
+
+
+            var forests = [];
+
+
+            json_Fortsclasses_2.features
+                .forEach(
+
+                    function(feature) {
+
+                        var name =
+
+                            feature.properties[
+                                'NOM_FORET'
+                            ] ||
+
+                            'Sans nom';
+
+
+                        var area =
+
+                            getNumber(
+
+                                feature.properties[
+                                    'SURFACE_HA'
+                                ]
+
+                            );
+
+
+                        if (
+
+                            !forestSearchText ||
+
+                            name
+                                .toLowerCase()
+                                .includes(
+                                    forestSearchText
+                                )
+
+                        ) {
+
+                            forests.push({
+
+                                name:
+                                    name,
+
+                                area:
+                                    area
+
+                            });
+
+                        }
+
+                    }
+
+                );
+
+
+            forests.sort(
+
+                function(a,b) {
+
+                    return b.area - a.area;
+
+                }
+
+            );
+
+
+            forests
+                .slice(0, 12)
+                .forEach(
+
+                    function(forest) {
+
+                        tbody.innerHTML +=
+
+                            '<tr>' +
+
+                            '<td>' +
+
+                            escapeHTML(
+                                forest.name
+                            ) +
+
+                            '</td>' +
+
+                            '<td>' +
+
+                            formatNumber(
+                                forest.area,
+                                0
+                            ) +
+
+                            '</td>' +
+
+                            '</tr>';
+
+                    }
+
+                );
+
+        }
+
+
+        /* =========================================================
+           24. GRAPHIQUE VEGETATION
+           ========================================================= */
+
+        function buildVegetationChart() {
+
+            var stats =
+                getSectorStatistics();
+
+
+            var labels =
+                Object.keys(
+                    stats
+                );
+
+
+            var values =
+                Object.values(
+                    stats
+                );
+
+
+            if (
+                vegetationChart
+            ) {
+
+                vegetationChart.destroy();
+
+            }
+
+
+            vegetationChart =
+
+                new Chart(
+
+                    document.getElementById(
+                        'vegetationChart'
+                    ),
+
+                    {
+
+                        type:
+                            'doughnut',
+
+                        data: {
+
+                            labels:
+                                labels,
+
+                            datasets: [
+
+                                {
+
+                                    data:
+                                        values,
+
+                                    borderWidth:
+                                        1
+
+                                }
+
+                            ]
+
+                        },
+
+                        options: {
+
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            plugins: {
+
+                                legend: {
+
+                                    position:
+                                        'bottom',
+
+                                    labels: {
+
+                                        boxWidth:
+                                            12,
+
+                                        font: {
+
+                                            size:
+                                                9
+
+                                        }
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                );
+
+        }
+
+
+        /* =========================================================
+           25. GRAPHIQUE FORETS
+           ========================================================= */
+
+        function buildForestChart() {
+
+            var forests = [];
+
+
+            json_Fortsclasses_2.features
+                .forEach(
+
+                    function(feature) {
+
+                        forests.push({
+
+                            name:
+
+                                feature.properties[
+                                    'NOM_FORET'
+                                ] ||
+
+                                'Sans nom',
+
+                            area:
+
+                                getNumber(
+                                    feature.properties[
+                                        'SURFACE_HA'
+                                    ]
+                                )
+
+                        });
+
+                    }
+
+                );
+
+
+            forests.sort(
+
+                function(a,b) {
+
+                    return b.area - a.area;
+
+                }
+
+            );
+
+
+            forests =
+                forests.slice(0, 8);
+
+
+            if (
+                forestChart
+            ) {
+
+                forestChart.destroy();
+
+            }
+
+
+            forestChart =
+
+                new Chart(
+
+                    document.getElementById(
+                        'forestChart'
+                    ),
+
+                    {
+
+                        type:
+                            'bar',
+
+                        data: {
+
+                            labels:
+
+                                forests.map(
+                                    function(item) {
+
+                                        return item.name;
+
+                                    }
+                                ),
+
+                            datasets: [
+
+                                {
+
+                                    label:
+                                        'Superficie (ha)',
+
+                                    data:
+
+                                        forests.map(
+                                            function(item) {
+
+                                                return item.area;
+
+                                            }
+                                        ),
+
+                                    borderWidth:
+                                        1
+
+                                }
+
+                            ]
+
+                        },
+
+                        options: {
+
+                            indexAxis:
+                                'y',
+
+                            responsive:
+                                true,
+
+                            maintainAspectRatio:
+                                false,
+
+                            plugins: {
+
+                                legend: {
+
+                                    display:
+                                        false
+
+                                }
+
+                            },
+
+                            scales: {
+
+                                x: {
+
+                                    beginAtZero:
+                                        true
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                );
+
+        }
+
+
+        /* =========================================================
+           26. PANNEAU LATERAL
+           ========================================================= */
+
+        function toggleSidebar() {
+
+            document
+                .getElementById(
+                    'sidebar'
+                )
+                .classList
+                .toggle(
+                    'hidden'
+                );
+
+        }
+
+
+        /* =========================================================
+           27. OUVERTURE MODAL DONNEES
+           ========================================================= */
+
+        function openDataModal(
+            dataset
+        ) {
+
+            document
+                .getElementById(
+                    'dataModal'
+                )
+                .classList
+                .add(
+                    'show'
+                );
+
+
+            loadDataset(
+                dataset
+            );
+
+        }
+
+
+        function closeDataModal() {
+
+            document
+                .getElementById(
+                    'dataModal'
+                )
+                .classList
+                .remove(
+                    'show'
+                );
+
+        }
+
+
+        /* =========================================================
+           28. CHANGEMENT DE DATASET
+           ========================================================= */
+
+        function loadDataset(
+            dataset
+        ) {
+
+            currentDataset =
+                dataset;
+
+
+            document
+                .querySelectorAll(
+                    '.dataset-btn'
+                )
+                .forEach(
+
+                    function(button) {
+
+                        button.classList.remove(
+                            'active'
+                        );
+
+                    }
+
+                );
+
+
+            var activeButton =
+                document.getElementById(
+
+                    dataset === 'vegetation'
+
+                        ?
+
+                        'btnVegetation'
+
+                        :
+
+                    dataset === 'forests'
+
+                        ?
+
+                        'btnForests'
+
+                        :
+
+                    dataset === 'parks'
+
+                        ?
+
+                        'btnParks'
+
+                        :
+
+                        'btnAdmin'
+
+                );
+
+
+            if (
+                activeButton
+            ) {
+
+                activeButton.classList.add(
+                    'active'
+                );
+
+            }
+
+
+            var title = {
+
+                vegetation:
+                    'Données des types de végétation',
+
+                forests:
+                    'Données des forêts classées',
+
+                parks:
+                    'Données des parcs nationaux',
+
+                admin:
+                    'Données des limites administratives'
+
+            };
+
+
+            document
+                .getElementById(
+                    'modalTitle'
+                )
+                .textContent =
+                    title[dataset];
+
+
+            buildModalTable(
+                dataset
+            );
+
+        }
+
+
+        /* =========================================================
+           29. TABLEAU MODAL
+           ========================================================= */
+
+        function buildModalTable(
+            dataset
+        ) {
+
+            var thead =
+                document.getElementById(
+                    'modalTableHead'
+                );
+
+
+            var tbody =
+                document.getElementById(
+                    'modalTableBody'
+                );
+
+
+            thead.innerHTML =
+                '';
+
+
+            tbody.innerHTML =
+                '';
+
+
+            var features;
+
+
+            var columns;
+
+
+            if (
+                dataset ===
+                'vegetation'
+            ) {
+
+                features =
+                    json_Typesdevgtation_1.features;
+
+
+                columns = [
+
+                    ['SECTEUR','Secteur'],
+
+                    ['DOMAINE','Domaine'],
+
+                    ['DESCRIPTIO','Description'],
+
+                    ['AREA','Surface']
+
+                ];
+
+            }
+
+            else if (
+                dataset ===
+                'forests'
+            ) {
+
+                features =
+                    json_Fortsclasses_2.features;
+
+
+                columns = [
+
+                    ['NOM_FORET','Nom de la forêt'],
+
+                    ['SURFACE_HA','Superficie (ha)'],
+
+                    ['FINANCEMEN','Financement'],
+
+                    ['FORET_LL_','ID']
+
+                ];
+
+            }
+
+            else if (
+                dataset ===
+                'parks'
+            ) {
+
+                features =
+                    json_Parcnationaux_3.features;
+
+
+                columns = [
+
+                    ['NOM_FORET','Nom'],
+
+                    ['SURFACE_HA','Superficie (ha)'],
+
+                    ['FINANCEMEN','Financement'],
+
+                    ['FORET_LL_','ID']
+
+                ];
+
+            }
+
+            else {
+
+                features =
+                    json_Limiteadministrative_4.features;
+
+
+                columns = [
+
+                    ['fid','FID'],
+
+                    ['LAYER','Layer'],
+
+                    ['LEFT_FID','LEFT_FID'],
+
+                    ['RIGHT_FID','RIGHT_FID'],
+
+                    ['LENGTH','Longueur']
+
+                ];
+
+            }
+
+
+            var headerRow =
+                document.createElement(
+                    'tr'
+                );
+
+
+            columns.forEach(
+
+                function(column) {
+
+                    var th =
+                        document.createElement(
+                            'th'
+                        );
+
+
+                    th.textContent =
+                        column[1];
+
+
+                    headerRow.appendChild(
+                        th
+                    );
+
+                }
+
+            );
+
+
+            thead.appendChild(
+                headerRow
+            );
+
+
+            features.forEach(
+
+                function(feature) {
+
+                    var tr =
+                        document.createElement(
+                            'tr'
+                        );
+
+
+                    columns.forEach(
+
+                        function(column) {
+
+                            var td =
+                                document.createElement(
+                                    'td'
+                                );
+
+
+                            var value =
+                                feature.properties[
+                                    column[0]
+                                ];
+
+
+                            if (
+                                column[0] ===
+                                    'SURFACE_HA'
+                            ) {
+
+                                value =
+                                    getNumber(
+                                        value
+                                    );
+
+
+                                value =
+                                    formatNumber(
+                                        value,
+                                        2
+                                    );
+
+                            }
+
+
+                            td.textContent =
+                                value === null ||
+                                value === undefined
+                                ?
+
+                                ''
+
+                                :
+
+                                value;
+
+
+                            tr.appendChild(
+                                td
+                            );
+
+                        }
+
+                    );
+
+
+                    tbody.appendChild(
+                        tr
+                    );
+
+                }
+
+            );
+
+        }
+
+
+        /* =========================================================
+           30. EXPORT CSV
+           ========================================================= */
+
+        function exportCurrentDatasetCSV() {
+
+            var rows = [];
+
+
+            var features;
+
+
+            var columns;
+
+
+            if (
+                currentDataset ===
+                'vegetation'
+            ) {
+
+                features =
+                    json_Typesdevgtation_1.features;
+
+
+                columns = [
+
+                    ['SECTEUR','Secteur'],
+
+                    ['DOMAINE','Domaine'],
+
+                    ['DESCRIPTIO','Description'],
+
+                    ['AREA','Surface']
+
+                ];
+
+            }
+
+            else if (
+                currentDataset ===
+                'forests'
+            ) {
+
+                features =
+                    json_Fortsclasses_2.features;
+
+
+                columns = [
+
+                    ['NOM_FORET','Nom'],
+
+                    ['SURFACE_HA','Surface ha'],
+
+                    ['FINANCEMEN','Financement'],
+
+                    ['FORET_LL_','ID']
+
+                ];
+
+            }
+
+            else if (
+                currentDataset ===
+                'parks'
+            ) {
+
+                features =
+                    json_Parcnationaux_3.features;
+
+
+                columns = [
+
+                    ['NOM_FORET','Nom'],
+
+                    ['SURFACE_HA','Surface ha'],
+
+                    ['FINANCEMEN','Financement'],
+
+                    ['FORET_LL_','ID']
+
+                ];
+
+            }
+
+            else {
+
+                features =
+                    json_Limiteadministrative_4.features;
+
+
+                columns = [
+
+                    ['fid','FID'],
+
+                    ['LAYER','Layer'],
+
+                    ['LEFT_FID','LEFT_FID'],
+
+                    ['RIGHT_FID','RIGHT_FID'],
+
+                    ['LENGTH','Longueur']
+
+                ];
+
+            }
+
+
+            rows.push(
+
+                columns.map(
+                    function(column) {
+
+                        return column[1];
+
+                    }
+                )
+
+            );
+
+
+            features.forEach(
+
+                function(feature) {
+
+                    rows.push(
+
+                        columns.map(
+                            function(column) {
+
+                                return
+
+                                    feature.properties[
+                                        column[0]
+                                    ] ?? '';
+
+                            }
+                        )
+
+                    );
+
+                }
+
+            );
+
+
+            var csv =
+
+                '\uFEFF' +
+
+                rows
+                    .map(
+
+                        function(row) {
+
+                            return row
+                                .map(
+
+                                    function(value) {
+
+                                        return '"' +
+
+                                            String(value)
+                                            .replace(
+                                                /"/g,
+                                                '""'
+                                            ) +
+
+                                            '"';
+
+                                    }
+
+                                )
+                                .join(';');
+
+                        }
+
+                    )
+                    .join('\n');
+
+
+            var blob =
+                new Blob(
+
+                    [csv],
+
+                    {
+                        type:
+                            'text/csv;charset=utf-8;'
+                    }
+
+                );
+
+
+            var url =
+                URL.createObjectURL(
+                    blob
+                );
+
+
+            var link =
+                document.createElement(
+                    'a'
+                );
+
+
+            link.href =
+                url;
+
+
+            link.download =
+
+                currentDataset +
+
+                '_cote_ivoire.csv';
+
+
+            document.body.appendChild(
+                link
+            );
+
+
+            link.click();
+
+
+            document.body.removeChild(
+                link
+            );
+
+
+            URL.revokeObjectURL(
+                url
+            );
+
+        }
+
+
+        /* =========================================================
+           31. FENETRE PROJET
+           ========================================================= */
+
+        function openProjectInfo() {
+
+            document
+                .getElementById(
+                    'infoModal'
+                )
+                .classList
+                .add(
+                    'show'
+                );
+
+        }
+
+
+        function closeProjectInfo() {
+
+            document
+                .getElementById(
+                    'infoModal'
+                )
+                .classList
+                .remove(
+                    'show'
+                );
+
+        }
+
+
+        /* =========================================================
+           32. REINITIALISATION GENERALE
+           ========================================================= */
+
+        function resetAllFilters() {
+
+            resetVegetationFilter();
+
+            resetForestSearch();
+
+        }
+
+
+        /* =========================================================
+           33. FERMETURE MODALES AU CLIC EXTERIEUR
+           ========================================================= */
+
+        document.getElementById(
+            'dataModal'
+        ).addEventListener(
+
+            'click',
+
+            function(e) {
+
+                if (
+                    e.target === this
+                ) {
+
+                    closeDataModal();
+
+                }
+
+            }
+
+        );
+
+
+        document.getElementById(
+            'infoModal'
+        ).addEventListener(
+
+            'click',
+
+            function(e) {
+
+                if (
+                    e.target === this
+                ) {
+
+                    closeProjectInfo();
+
+                }
+
+            }
+
+        );
+
+
+        /* =========================================================
+           34. FERMETURE AVEC ECHAP
+           ========================================================= */
+
+        document.addEventListener(
+
+            'keydown',
+
+            function(e) {
+
+                if (
+                    e.key === 'Escape'
+                ) {
+
+                    closeDataModal();
+
+                    closeProjectInfo();
+
+                }
+
+            }
+
+        );
+
+
+        /* =========================================================
+           35. INITIALISATION DU WEBGIS
+           ========================================================= */
+
+        populateSectorFilter();
+
+        updateKPIs();
+
+        buildSectorTable();
+
+        buildForestTable();
+
+        buildVegetationChart();
+
+        buildForestChart();
+
+
+        /* =========================================================
+           36. ADAPTATION DU PANNEAU SUR PETIT ECRAN
+           ========================================================= */
+
+        if (
+            window.innerWidth < 650
+        ) {
+
+            document
+                .getElementById(
+                    'sidebar'
+                )
+                .classList
+                .add(
+                    'hidden'
+                );
+
+        }
+
+    </script>
+
+
+</body>
+
+</html>
